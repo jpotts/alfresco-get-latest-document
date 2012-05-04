@@ -1,0 +1,6 @@
+<webscript>
+   <shortname>Get Latest Document</shortname>
+   <description>Displays properties of the latest document in a folder to the user</description>
+   <family>dashlet</family>
+   <url>/components/dashlets/someco/get-latest-doc</url>
+</webscript>
