@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Retrieves Latest Document</shortname>
+   <description>Returns properties of the latest document for a specified folder path</description>
+   <url>/someco/get-latest-doc?filterPathView={filterPathView}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>
