@@ -6,12 +6,36 @@
 
 (function() {
 
-   new Alfresco.widget.DashletResizer("${el}", "${instance.object.id}");
+  var getLatestDoc = new SomeCo.dashlet.GetLatestDoc("${el}").setOptions(
+  {
+    "componentId": "${instance.object.id}",
+    "siteId": "${page.url.templateArgs.site!""}",
+    "title": "${title}",
+    "filterPath": "${filterPath}",
+    "filterPathView": "${filterPathView}"
+  }).setMessages(${messages});
+    
+  new Alfresco.widget.DashletResizer("${el}", "${instance.object.id}");
 
+   /**
+    * Create a new custom YUI event and subscribe it to the GetLatestDoc onConfigGetLatestDocClick
+    * function. This custom event is then passed into the DashletTitleBarActions widget as
+    * an eventOnClick action so that it can be fired when the user clicks on the Edit icon
+   */
+   var editDashletEvent = new YAHOO.util.CustomEvent("onDashletConfigure");
+   editDashletEvent.subscribe(getLatestDoc.onConfigGetLatestDocClick, getLatestDoc, true);
    new Alfresco.widget.DashletTitleBarActions("${args.htmlid?html}").setOptions(
    {
       actions:
       [
+
+<#if userIsSiteManager>
+         {
+            cssClass: "edit",
+            eventOnClick: editDashletEvent,
+            tooltip: "${msg("dashlet.edit.tooltip")?js_string}"
+         },
+</#if>
          {
             cssClass: "help",
             bubbleOnClick:
@@ -38,9 +62,9 @@
         </div>
         <div id="getlatestdoc_item_info">
           <a href="${url.context}/page/document-details?nodeRef=${result.nodeRef}">${result.name}</a><br />
-          ${result.title} <br />
-          ${result.created} <br />
-          ${result.description} <br />
+          ${result.title!''} <br />
+          ${result.created}) <br />
+          ${result.description!''} <br />
         </div>
       </div>
     </div></div>
