@@ -1,23 +1,33 @@
-
 function main()
 {
 
 	// Call the repository to see if the user is site manager or not
-	var userIsSiteManager = false,
-	json = remote.call("/api/sites/" + page.url.templateArgs.site + "/memberships/" + encodeURIComponent(user.name));
+	var userIsSiteManager = false;
+	
+	// Check to see if user is on user dashboard or site dashboard... 
+	// if on site dashboard, check for permission, 
+	// if on user dashboard, grant permission
+	
+	if(page.url.templateArgs.site == null || page.url.templateArgs.site == undefined){
+		userIsSiteManager = true;
+	}else{
+		json = remote.call("/api/sites/" + page.url.templateArgs.site + "/memberships/" + encodeURIComponent(user.name));
 
-	if (json.status == 200)
-	{
-		var obj = eval('(' + json + ')');
-		if (obj)
+		if (json.status == 200)
 		{
-			userIsSiteManager = (obj.role == "SiteManager");
+			var obj = eval('(' + json + ')');
+			if (obj)
+			{
+				userIsSiteManager = (obj.role == "SiteManager");
+			}
 		}
 	}
+	
 	model.userIsSiteManager = userIsSiteManager;
-
+	
 	var title = args.title;
 	var filterPath = args.filterPath;
+	
 	if (filterPath == null)
 	{
 		filterPath = "";
@@ -42,7 +52,7 @@ function main()
 		filterPathView = conf.filterPathView[0].toString();
 	}
 
-	var json = remote.call("/someco/get-latest-doc?filterPathView=" + escape(filterPathView));
+	var json = remote.call("/politie/get-latest-doc?filterPathView=" + escape(filterPathView));
 	if (json.status == 200)
 	{
 		obj = eval("(" + json + ")");
@@ -51,8 +61,10 @@ function main()
 	else
 	{
 		obj = eval("(" + json + ")");
-		obj.name = "Error";
 		title = "Error";
+		obj.name = "";
+		obj.nodeRef = "";
+		obj.created = "";
 		model.result = obj;
 	}
   
@@ -64,6 +76,7 @@ function main()
 }
 
 main();
+
 
 
 

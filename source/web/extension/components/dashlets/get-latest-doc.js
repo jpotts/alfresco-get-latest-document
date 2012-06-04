@@ -1,11 +1,11 @@
-if (typeof SomeCo == "undefined" || !SomeCo)
+if (typeof politie == "undefined" || !politie)
 {
-   var SomeCo = {};
-   SomeCo.dashlet = {};   
+   var politie = {};
+   politie.dashlet = {};   
 }
 
 /**
- * SomeCo.dashlet.GetLatestDoc
+ * politie.dashlet.GetLatestDoc
  */
 (function()
 {
@@ -19,12 +19,12 @@ if (typeof SomeCo == "undefined" || !SomeCo)
     * GetLatestDoc constructor.
     * 
     * @param {String} htmlId The HTML id of the parent element
-    * @return {SomeCo.dashlet.GetLatestDoc} The new GetLatestDoc instance
+    * @return {politie.dashlet.GetLatestDoc} The new GetLatestDoc instance
     * @constructor
     */
-   SomeCo.dashlet.GetLatestDoc = function GetLatestDoc_constructor(htmlId)
+   politie.dashlet.GetLatestDoc = function GetLatestDoc_constructor(htmlId)
    {
-	    SomeCo.dashlet.GetLatestDoc.superclass.constructor.call(this, "SomeCo.dashlet.GetLatestDoc", htmlId);
+	    politie.dashlet.GetLatestDoc.superclass.constructor.call(this, "politie.dashlet.GetLatestDoc", htmlId);
 
         /**
          * Register this component
@@ -35,11 +35,11 @@ if (typeof SomeCo == "undefined" || !SomeCo)
          * Load YUI Components
          */
         Alfresco.util.YUILoaderHelper.require(["button", "container", "datasource", "datatable", "paginator", "json", "history", "tabview"], this.onComponentsLoaded, this);
-
+		
         return this;
     };
 
-    YAHOO.extend(SomeCo.dashlet.GetLatestDoc, Alfresco.component.Base,
+    YAHOO.extend(politie.dashlet.GetLatestDoc, Alfresco.component.Base,
     {
  		/**
          * Object container for initialization options
@@ -79,26 +79,48 @@ if (typeof SomeCo == "undefined" || !SomeCo)
         onConfigGetLatestDocClick: function getLatestDoc_onConfigGetLatestDocClick(e)
         {
 
-            var actionUrl = Alfresco.constants.URL_SERVICECONTEXT + "modules/someco/get-latest-doc/config/" + encodeURIComponent(this.options.componentId);
+            var actionUrl = Alfresco.constants.URL_SERVICECONTEXT + "modules/politie/get-latest-doc/config/" + encodeURIComponent(this.options.componentId);
 
             if (!this.configDialog)
             {
                 this.configDialog = new Alfresco.module.SimpleDialog(this.id + "-configDialog").setOptions(
                 {
                     width: "30em",
-                    templateUrl: Alfresco.constants.URL_SERVICECONTEXT + "modules/someco/get-latest-doc/config",
+                    templateUrl: Alfresco.constants.URL_SERVICECONTEXT + "modules/politie/get-latest-doc/config",
                     actionUrl: actionUrl,
                     onSuccess:
                     {
                         fn: function getLatestDoc_onConfig_callback(response)
                 		{
-                            var obj = response.json;
+                           var obj = response.json;
 
                             // Save values for new config dialog openings
                             this.options.title = (obj && obj.title) ? obj.title : this.options.title;
                             this.options.filterPath = (obj && obj.filterPath) ? obj.filterPath : this.options.filterPath;
 
-                            // Update dashlet body with new values
+			var scriptURL = Alfresco.constants.PROXY_URI + "/politie/get-latest-doc?filterPathView="+obj.filterPathView;
+
+			YAHOO.util.Connect.asyncRequest("GET", scriptURL,{
+				success: handleInfo,
+				failure: handleErrorYahoo,
+			}, null);
+							
+			// Update dashlet body with new values
+			function handleInfo(obje){
+				var dat = eval("(" + obje.responseText + ")");
+		
+				var fileExt = String(dat.name).lastIndexOf(".");
+				fileExt = String(dat.name).substring(fileExt + 1).toLowerCase();
+					Dom.get("getlatestdoc_item_afb").innerHTML = '<a href="' + Alfresco.constants.URL_CONTEXT + '/page/document-details?nodeRef=' + dat.nodeRef +'"><img src="' + Alfresco.constants.URL_CONTEXT + '/components/images/filetypes/' + fileExt + '-file-48.png" onerror="this.src=\'' + Alfresco.constants.URL_CONTEXT + '/res/components/images/filetypes/generic-file-48.png\'" title="'+dat.name+'" class="node-thumbnail" width="48" /> ';							
+					Dom.get("getlatestdoc_item_info").innerHTML = '<a href="' + Alfresco.constants.URL_CONTEXT + '/page/document-details?nodeRef=' + dat.nodeRef +'">'+ dat.name + '</a><br /> ' + dat.created + '<br />';			
+				}	
+					
+				Dom.get("getlatestdoc_title").innerHTML = obj ? obj.title : "";
+			
+				// function handleErrorYahoo(response){alert("failed..." + response.responseText);}
+				function handleErrorYahoo(response){alert("Failed... No file found at this location");}
+
+                            // Update dashlet config with new values
                             Dom.get(this.configDialog.id + "-title").value = obj ? obj.title : "";
                             Dom.get(this.configDialog.id + "-filterPath").value = obj ? obj.filterPath : "";
                             Dom.get(this.configDialog.id + "-filterPathView").innerHTML = obj ? obj.filterPathView : "";
@@ -106,10 +128,9 @@ if (typeof SomeCo == "undefined" || !SomeCo)
                         scope: this
                     },
 
-                    doSetupFormsValidation:
-                    {
-                        fn: function getLatestDoc_doSetupForm_callback(form)
-                    	{
+                    doSetupFormsValidation: 
+					{
+                        fn: function getlatestdoc_doSetupForm_callback(form) {
                             form.addValidation(this.configDialog.id + "-title", Alfresco.forms.validation.mandatory, null, "keyup");
                             form.setShowSubmitStateDynamically(true, false);
 
@@ -140,7 +161,7 @@ if (typeof SomeCo == "undefined" || !SomeCo)
             this.widgets.filterPathView.innerHTML = "";
             this.widgets.filterPathField.value = "";
         },
-
+		
         onSelectFilterPath: function getLatestDoc_onSelectFilterPath(e) {
 
             if (!this.widgets.filterPathDialog)
@@ -165,7 +186,7 @@ if (typeof SomeCo == "undefined" || !SomeCo)
                     if (obj !== null) {
                         this.widgets.filterPathView.innerHTML = obj.selectedFolder.path;
                         this.widgets.filterPathField.value = obj.selectedFolder.nodeRef + "|" + obj.selectedFolder.path;
-                        this.widgets
+						this.widgets
                     }
                 }, this);
             }
